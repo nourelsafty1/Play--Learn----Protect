@@ -221,7 +221,6 @@ const learningModuleSchema = new mongoose.Schema({
 
 // Index for searching
 learningModuleSchema.index({ subject: 1, topic: 1, ageGroups: 1 });
-learningModuleSchema.index({ title: 'text', description: 'text' });
 
 // Method to add rating
 learningModuleSchema.methods.addRating = function(rating) {

@@ -1,0 +1,290 @@
+// src/pages/MonitoringPage.js
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/common/Navbar';
+import Card from '../components/common/Card';
+import Button from '../components/common/Button';
+import Loading from '../components/common/Loading';
+import { childrenAPI, monitoringAPI } from '../services/api';
+import { formatDuration } from '../utils/helpers';
+
+const MonitoringPage = () => {
+  const navigate = useNavigate();
+  
+  const [children, setChildren] = useState([]);
+  const [selectedChild, setSelectedChild] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState('7');
+
+  useEffect(() => {
+    fetchChildren();
+  }, []);
+
+  useEffect(() => {
+    if (selectedChild) {
+      fetchAnalytics();
+    }
+  }, [selectedChild, period]);
+
+  const fetchChildren = async () => {
+    try {
+      setLoading(true);
+      const response = await childrenAPI.getAll();
+      const childrenData = response.data.data;
+      setChildren(childrenData);
+      
+      if (childrenData.length > 0) {
+        setSelectedChild(childrenData[0]._id);
+      }
+    } catch (error) {
+      console.error('Error fetching children:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      setLoading(true);
+      const [screenTime, learning, safety] = await Promise.all([
+        monitoringAPI.getScreenTime(selectedChild, period),
+        monitoringAPI.getLearningAnalytics(selectedChild, period),
+        monitoringAPI.getSafetyAnalytics(selectedChild, period)
+      ]);
+
+      setAnalytics({
+        screenTime: screenTime.data.data,
+        learning: learning.data.data,
+        safety: safety.data.data
+      });
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading && !analytics) {
+    return (
+      <>
+        <Navbar />
+        <Loading />
+      </>
+    );
+  }
+
+  const selectedChildData = children.find(c => c._id === selectedChild);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
+      <Navbar />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">📊 Monitoring Dashboard</h1>
+          <p className="text-gray-600 text-lg">Track your children's activity and progress</p>
+        </div>
+
+        {/* Controls */}
+        <Card className="mb-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            {/* Child Selector */}
+            <div className="flex-1 w-full md:w-auto">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Select Child
+              </label>
+              <select
+                value={selectedChild || ''}
+                onChange={(e) => setSelectedChild(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+              >
+                {children.map((child) => (
+                  <option key={child._id} value={child._id}>
+                    {child.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Period Selector */}
+            <div className="flex-1 w-full md:w-auto">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Time Period
+              </label>
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
+              >
+                <option value="7">Last 7 Days</option>
+                <option value="30">Last 30 Days</option>
+                <option value="90">Last 3 Months</option>
+              </select>
+            </div>
+
+            {/* View Details Button */}
+            <div className="flex-1 w-full md:w-auto flex items-end">
+              <Button
+                onClick={() => navigate(`/monitoring/${selectedChild}`)}
+                disabled={!selectedChild}
+                className="w-full"
+              >
+                View Detailed Report →
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        {loading ? (
+          <Loading />
+        ) : analytics ? (
+          <>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-center">
+                <div className="text-3xl mb-2">⏰</div>
+                <div className="text-4xl font-bold mb-2">{analytics.screenTime.totalTime}m</div>
+                <div className="text-sm opacity-90">Total Screen Time</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white text-center">
+                <div className="text-3xl mb-2">🎮</div>
+                <div className="text-4xl font-bold mb-2">{analytics.learning.totalActivities}</div>
+                <div className="text-sm opacity-90">Activities Completed</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-yellow-500 to-orange-500 text-white text-center">
+                <div className="text-3xl mb-2">📚</div>
+                <div className="text-4xl font-bold mb-2">{analytics.learning.modules.completed}</div>
+                <div className="text-sm opacity-90">Modules Completed</div>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-center">
+                <div className="text-3xl mb-2">🛡️</div>
+                <div className="text-4xl font-bold mb-2">{analytics.safety.safetyScore}</div>
+                <div className="text-sm opacity-90">Safety Score</div>
+              </Card>
+            </div>
+
+            {/* Screen Time Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              <Card title="⏰ Screen Time Breakdown">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-600">Games</span>
+                      <span className="font-semibold">{Math.round(analytics.screenTime.activityBreakdown.games)}m</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-blue-500 h-2 rounded-full"
+                        style={{ width: `${(analytics.screenTime.activityBreakdown.games / analytics.screenTime.totalTime) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-600">Learning</span>
+                      <span className="font-semibold">{Math.round(analytics.screenTime.activityBreakdown.learning)}m</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-500 h-2 rounded-full"
+                        style={{ width: `${(analytics.screenTime.activityBreakdown.learning / analytics.screenTime.totalTime) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-600">Creative</span>
+                      <span className="font-semibold">{Math.round(analytics.screenTime.activityBreakdown.creative)}m</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-purple-500 h-2 rounded-full"
+                        style={{ width: `${(analytics.screenTime.activityBreakdown.creative / analytics.screenTime.totalTime) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Learning Progress */}
+              <Card title="📊 Learning Progress">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Games Completed</span>
+                    <span className="text-2xl font-bold text-blue-600">{analytics.learning.games.completed}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Average Game Score</span>
+                    <span className="text-2xl font-bold text-green-600">{analytics.learning.games.averageScore}%</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Modules Completed</span>
+                    <span className="text-2xl font-bold text-purple-600">{analytics.learning.modules.completed}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Average Module Score</span>
+                    <span className="text-2xl font-bold text-pink-600">{analytics.learning.modules.averageScore}%</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Safety Summary */}
+            <Card title="🛡️ Safety Summary">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <div className="text-4xl mb-2">✅</div>
+                  <div className="text-2xl font-bold text-green-600">{analytics.safety.safetyScore}/100</div>
+                  <div className="text-sm text-gray-600">Safety Score</div>
+                </div>
+
+                <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                  <div className="text-4xl mb-2">🚨</div>
+                  <div className="text-2xl font-bold text-yellow-600">{analytics.safety.totalAlerts}</div>
+                  <div className="text-sm text-gray-600">Total Alerts</div>
+                </div>
+
+                <div className="text-center p-4 bg-red-50 rounded-lg">
+                  <div className="text-4xl mb-2">⚠️</div>
+                  <div className="text-2xl font-bold text-red-600">{analytics.safety.unresolvedAlerts}</div>
+                  <div className="text-sm text-gray-600">Unresolved Alerts</div>
+                </div>
+              </div>
+
+              {analytics.safety.unresolvedAlerts > 0 && (
+                <div className="mt-6">
+                  <Button
+                    variant="danger"
+                    onClick={() => navigate(`/safety/${selectedChild}`)}
+                    fullWidth
+                  >
+                    <span>⚠️</span>
+                    <span>View Safety Alerts</span>
+                  </Button>
+                </div>
+              )}
+            </Card>
+          </>
+        ) : (
+          <Card>
+            <div className="text-center py-12">
+              <div className="text-6xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">No data available</h3>
+              <p className="text-gray-500">Add a child to start monitoring</p>
+            </div>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MonitoringPage;
