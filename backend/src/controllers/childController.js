@@ -4,6 +4,7 @@ const Child = require('../models/Child');
 const User = require('../models/User');
 const Progress = require('../models/Progress');
 const Session = require('../models/Session');
+const Achievement = require('../models/Achievement');
 
 // @desc    Create a new child account
 // @route   POST /api/children
@@ -295,7 +296,7 @@ exports.addPoints = async (req, res, next) => {
 exports.getChildDashboard = async (req, res, next) => {
   try {
     const child = await Child.findById(req.params.id)
-      .populate('achievements.achievement')
+      .populate('achievements.achievement') 
       .populate('completedGames.game', 'title thumbnail')
       .populate('completedLessons.lesson', 'title thumbnail');
 
@@ -306,13 +307,14 @@ exports.getChildDashboard = async (req, res, next) => {
       });
     }
 
+
     // Get recent progress
     const recentProgress = await Progress.find({ child: child._id })
       .sort({ lastAccessedAt: -1 })
       .limit(5)
       .populate('game', 'title thumbnail category')
       .populate('learningModule', 'title thumbnail subject');
-
+      
     // Get today's screen time
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -330,6 +332,7 @@ exports.getChildDashboard = async (req, res, next) => {
     const gamification = require('../utils/gamification');
     const suggestions = await gamification.getSuggestedActivities(child._id);
 
+
     // Calculate level progress
     const levelProgress = gamification.levelProgress(child.experiencePoints, child.level);
     const xpForNext = gamification.xpForNextLevel(child.level);
@@ -341,6 +344,7 @@ exports.getChildDashboard = async (req, res, next) => {
           name: child.name,
           username: child.username,
           avatar: child.avatar,
+          avatarColor: child.avatarColor,
           level: child.level,
           totalPoints: child.totalPoints,
           currentStreak: child.currentStreak,
@@ -364,10 +368,10 @@ exports.getChildDashboard = async (req, res, next) => {
     });
 
   } catch (error) {
+    console.error('Error in getChildDashboard:', error);
     next(error);
   }
 };
-
 // @desc    Delete/Deactivate child account
 // @route   DELETE /api/children/:id
 // @access  Private (Parent/Admin only)

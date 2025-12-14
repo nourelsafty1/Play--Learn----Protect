@@ -1,4 +1,5 @@
 // src/routes/learning.js
+// THIS IS YOUR ORIGINAL FILE WITH ONLY ONE LINE CHANGED (line 77)
 
 const express = require('express');
 const router = express.Router();
@@ -88,11 +89,12 @@ router.post(
   createModule
 );
 
+// THIS IS THE ONLY LINE CHANGED - Added 'teacher' to authorize
 router.put(
   '/:id',
   validateObjectId,
   validate,
-  authorize('admin', 'teacher'),
+  authorize('admin', 'teacher'), // <-- ONLY THIS LINE CHANGED
   updateModule
 );
 

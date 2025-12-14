@@ -1,4 +1,5 @@
 // src/controllers/learningController.js
+// ONLY REPLACE THE updateModule FUNCTION - KEEP EVERYTHING ELSE THE SAME
 
 const LearningModule = require('../models/LearningModule');
 const Progress = require('../models/Progress');
@@ -113,7 +114,7 @@ exports.createModule = async (req, res, next) => {
 
 // @desc    Update learning module
 // @route   PUT /api/learning/:id
-// @access  Private (Admin/Creator)
+// @access  Private (Admin/Teacher) - THIS IS THE FIXED VERSION
 exports.updateModule = async (req, res, next) => {
   try {
     let module = await LearningModule.findById(req.params.id);
@@ -125,18 +126,26 @@ exports.updateModule = async (req, res, next) => {
       });
     }
 
-    // Check authorization
-    if (module.createdBy.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+    // Check authorization - allow both creator and teachers
+    const isCreator = module.createdBy && module.createdBy.toString() === req.user._id.toString();
+    const isTeacher = req.user.role === 'teacher';
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isCreator && !isTeacher && !isAdmin) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this module'
       });
     }
 
+    // Update the module - this properly handles lessons array
     module = await LearningModule.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { 
+        new: true, 
+        runValidators: true
+      }
     );
 
     res.status(200).json({

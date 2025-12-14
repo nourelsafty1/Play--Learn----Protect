@@ -262,18 +262,24 @@ const EditLearningModulePage = () => {
         ...moduleData,
         learningObjectives: cleanedObjectives,
         skills: cleanedSkills,
-        lessons: lessons
+        lessons: lessons // This should include all lessons with their full data
       };
 
-      await learningAPI.update(moduleId, updateData);
-      setSuccess('✅ Module updated successfully!');
+      console.log('Sending update data:', updateData);
+      console.log('Number of lessons:', lessons.length);
+
+      const response = await learningAPI.update(moduleId, updateData);
+      console.log('Update response:', response.data);
       
-      // Refresh the module data
+      setSuccess(`✅ Module updated successfully! ${lessons.length} lessons saved.`);
+      
+      // Refresh the module data after a short delay
       setTimeout(() => {
         fetchModule();
-      }, 1000);
+      }, 1500);
     } catch (error) {
       console.error('Error saving module:', error);
+      console.error('Error response:', error.response?.data);
       setError(error.response?.data?.message || 'Failed to save module. Please try again.');
     } finally {
       setSaving(false);
