@@ -101,14 +101,14 @@ function App() {
           } 
         />
         
-        <Route 
-          path="/children/:childId/dashboard" 
-          element={
-            <ProtectedRoute>
-              <ChildDashboard />
-            </ProtectedRoute>
-          } 
-        />
+ <Route
+  path="/children/:childId/dashboard"
+  element={
+    <ProtectedRoute>
+      <ChildDashboard />
+    </ProtectedRoute>
+  }
+/>
 
         {/* Games Routes */}
         <Route 

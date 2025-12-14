@@ -47,14 +47,13 @@ const LearningPage = () => {
     });
   };
 
-  const handleModuleAction = (moduleId) => {
-    if (user?.role === 'teacher') {
-      // Teachers go to edit page
-      navigate(`/learning/${moduleId}/edit`);
-    } else {
-      // Parents go to learning detail page
-      navigate(`/learning/${moduleId}`);
-    }
+  const handleViewModule = (moduleId) => {
+    navigate(`/learning/${moduleId}`);
+  };
+
+  const handleEditModule = (moduleId, e) => {
+    e.stopPropagation();
+    navigate(`/learning/${moduleId}/edit`);
   };
 
   return (
@@ -67,7 +66,7 @@ const LearningPage = () => {
           <h1 className="text-4xl font-bold text-gray-800 mb-2">📚 Learning Modules</h1>
           <p className="text-gray-600 text-lg">
             {user?.role === 'teacher' 
-              ? 'Manage and edit learning modules for your students'
+              ? 'View and manage learning modules for your students'
               : 'Structured courses to master new skills'
             }
           </p>
@@ -165,7 +164,7 @@ const LearningPage = () => {
               <Card 
                 key={module._id} 
                 className="cursor-pointer hover:shadow-2xl transition-all"
-                onClick={() => handleModuleAction(module._id)}
+                onClick={() => handleViewModule(module._id)}
               >
                 {/* Module Thumbnail */}
                 <div
@@ -221,26 +220,42 @@ const LearningPage = () => {
                   📝 {module.lessons?.length ?? 0} lessons
                 </div>
 
-                <Button
-                  size="sm"
-                  fullWidth
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleModuleAction(module._id);
-                  }}
-                >
-                  {user?.role === 'teacher' ? (
-                    <>
+                {/* Action Buttons - Different for Teachers */}
+                {user?.role === 'teacher' ? (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      fullWidth
+                      variant="secondary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewModule(module._id);
+                      }}
+                    >
+                      <span>👁️</span>
+                      <span>View</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      fullWidth
+                      onClick={(e) => handleEditModule(module._id, e)}
+                    >
                       <span>✏️</span>
-                      <span>Edit Module</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Start Learning</span>
-                      <span>→</span>
-                    </>
-                  )}
-                </Button>
+                      <span>Edit</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    size="sm"
+                    fullWidth
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewModule(module._id);
+                    }}
+                  >
+                    Start Learning →
+                  </Button>
+                )}
               </Card>
             ))}
           </div>
