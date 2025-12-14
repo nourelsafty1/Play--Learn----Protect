@@ -15,9 +15,8 @@ const GamesPage = () => {
   const [filters, setFilters] = useState({
     category: '',
     ageGroup: '',
-    difficulty: '',
-    search: ''
-  });
+    difficulty: ''
+    });
 
   useEffect(() => {
     fetchGames();
@@ -57,20 +56,6 @@ const GamesPage = () => {
         {/* Filters */}
         <Card className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Search */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Search
-              </label>
-              <input
-                type="text"
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                placeholder="Search games..."
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
-              />
-            </div>
-
             {/* Category */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
