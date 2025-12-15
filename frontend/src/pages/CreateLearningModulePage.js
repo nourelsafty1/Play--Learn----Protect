@@ -232,12 +232,14 @@ const CreateLearningModulePage = () => {
 
             if (moduleId) {
                 await learningAPI.update(moduleId, payload);
-                setSuccess('✅ Module updated successfully!');
+                setSuccess('✅ Module updated successfully! You can continue editing.');
+                // Don't redirect after update
+                setTimeout(() => setSuccess(''), 3000); // Clear success message after 3s
             } else {
                 await learningAPI.create(payload);
                 setSuccess('✅ Module created successfully!');
+                setTimeout(() => navigate('/learning'), 1500);
             }
-            setTimeout(() => navigate('/learning'), 1500);
         } catch (error) {
             setError(error.response?.data?.message || 'Failed to save module');
         } finally {
