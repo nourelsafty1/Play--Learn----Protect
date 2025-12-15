@@ -12,6 +12,7 @@ import AddChildPage from './pages/AddChildPage';
 import GamesPage from './pages/GamesPage';
 import GameDetailPage from './pages/GameDetailPage';
 import LearningPage from './pages/LearningPage';
+import CreateLearningModulePage from './pages/CreateLearningModulePage';
 import LearningDetailPage from './pages/LearningDetailPage';
 import MonitoringPage from './pages/MonitoringPage';
 import SafetyPage from './pages/SafetyPage';
@@ -19,27 +20,25 @@ import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
-import EditLearningModulePage from './pages/EditLearningModulePage';
-
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
 // Public Route Component (redirect if already logged in)
 const PublicRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  
+
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 };
 
@@ -54,154 +53,163 @@ function App() {
     <Router>
       <Routes>
         {/* Public Routes */}
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <PublicRoute>
               <Navigate to="/login" replace />
             </PublicRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/login" 
+
+        <Route
+          path="/login"
           element={
             <PublicRoute>
               <LoginPage />
             </PublicRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/register" 
+
+        <Route
+          path="/register"
           element={
             <PublicRoute>
               <RegisterPage />
             </PublicRoute>
-          } 
+          }
         />
 
         {/* Protected Routes */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <ParentDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Children Routes */}
-        <Route 
-          path="/children/add" 
+        <Route
+          path="/children/add"
           element={
             <ProtectedRoute>
               <AddChildPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        
- <Route
-  path="/children/:childId/dashboard"
-  element={
-    <ProtectedRoute>
-      <ChildDashboard />
-    </ProtectedRoute>
-  }
-/>
+
+        <Route
+          path="/children/:childId/dashboard"
+          element={
+            <ProtectedRoute>
+              <ChildDashboard />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Games Routes */}
-        <Route 
-          path="/games" 
+        <Route
+          path="/games"
           element={
             <ProtectedRoute>
               <GamesPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/games/:gameId" 
+
+        <Route
+          path="/games/:gameId"
           element={
             <ProtectedRoute>
               <GameDetailPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Learning Routes */}
-        <Route 
-          path="/learning" 
+        <Route
+          path="/learning"
           element={
             <ProtectedRoute>
               <LearningPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/learning/:moduleId" 
+
+        <Route
+          path="/learning/create"
+          element={
+            <ProtectedRoute>
+              <CreateLearningModulePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/edit/:moduleId"
+          element={
+            <ProtectedRoute>
+              <CreateLearningModulePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning/:moduleId"
           element={
             <ProtectedRoute>
               <LearningDetailPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/learning/:moduleId/edit" 
-          element={
-           <ProtectedRoute>
-      <EditLearningModulePage />
-    </ProtectedRoute>
-  } 
-/>
+
         {/* Monitoring Routes */}
-        <Route 
-          path="/monitoring" 
+        <Route
+          path="/monitoring"
           element={
             <ProtectedRoute>
               <MonitoringPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Safety Routes */}
-        <Route 
-          path="/safety" 
+        <Route
+          path="/safety"
           element={
             <ProtectedRoute>
               <SafetyPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Leaderboard Route */}
-        <Route 
-          path="/leaderboard" 
+        <Route
+          path="/leaderboard"
           element={
             <ProtectedRoute>
               <LeaderboardPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Profile & Settings Routes */}
-        <Route 
-          path="/profile" 
+        <Route
+          path="/profile"
           element={
             <ProtectedRoute>
               <ProfilePage />
             </ProtectedRoute>
-          } 
+          }
         />
-        
-        <Route 
-          path="/settings" 
+
+        <Route
+          path="/settings"
           element={
             <ProtectedRoute>
               <SettingsPage />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* 404 Not Found */}

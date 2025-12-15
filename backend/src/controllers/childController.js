@@ -56,7 +56,7 @@ exports.createChild = async (req, res, next) => {
 // @access  Private
 exports.getMyChildren = async (req, res, next) => {
   try {
-    let children;
+    let children = [];
 
     if (req.user.role === 'parent') {
       // Get children where user is a parent
@@ -65,11 +65,41 @@ exports.getMyChildren = async (req, res, next) => {
         isActive: true
       }).select('-__v');
     } else if (req.user.role === 'teacher') {
-      // Get children where user is a teacher
-      children = await Child.find({
+      // 1. Get children explicitly assigned to this teacher
+      const assignedChildren = await Child.find({
         teachers: req.user._id,
         isActive: true
       }).select('-__v');
+
+      // 2. Get children enrolled in modules created by this teacher
+      // Find modules created by this teacher
+      const LearningModule = require('../models/LearningModule');
+      const teacherModules = await LearningModule.find({ createdBy: req.user._id }).select('_id');
+      const teacherModuleIds = teacherModules.map(m => m._id);
+
+      // Find progress records for these modules
+      const enrolledChildrenIds = [];
+      if (teacherModuleIds.length > 0) {
+        const Progress = require('../models/Progress');
+        const enrollments = await Progress.find({
+          learningModule: { $in: teacherModuleIds }
+        }).distinct('child');
+        enrolledChildrenIds.push(...enrollments);
+      }
+
+      // 3. Combine and dedup
+      const allChildIds = [
+        ...assignedChildren.map(c => c._id.toString()),
+        ...enrolledChildrenIds.map(id => id.toString())
+      ];
+      const uniqueChildIds = [...new Set(allChildIds)];
+
+      // Fetch full child details
+      children = await Child.find({
+        _id: { $in: uniqueChildIds },
+        isActive: true
+      }).select('-__v');
+
     } else if (req.user.role === 'admin') {
       // Admin can see all children
       children = await Child.find({ isActive: true }).select('-__v');
@@ -104,7 +134,7 @@ exports.getChild = async (req, res, next) => {
     }
 
     // Check if user has access to this child
-    const hasAccess = 
+    const hasAccess =
       child.parents.some(p => p._id.toString() === req.user._id.toString()) ||
       child.teachers.some(t => t._id.toString() === req.user._id.toString()) ||
       req.user.role === 'admin';
@@ -164,7 +194,7 @@ exports.updateChild = async (req, res, next) => {
     };
 
     // Remove undefined fields
-    Object.keys(allowedUpdates).forEach(key => 
+    Object.keys(allowedUpdates).forEach(key =>
       allowedUpdates[key] === undefined && delete allowedUpdates[key]
     );
 
@@ -220,7 +250,7 @@ exports.updateChildSettings = async (req, res, next) => {
     };
 
     // Remove undefined fields
-    Object.keys(settings).forEach(key => 
+    Object.keys(settings).forEach(key =>
       settings[key] === undefined && delete settings[key]
     );
 
@@ -296,7 +326,7 @@ exports.addPoints = async (req, res, next) => {
 exports.getChildDashboard = async (req, res, next) => {
   try {
     const child = await Child.findById(req.params.id)
-      .populate('achievements.achievement') 
+      .populate('achievements.achievement')
       .populate('completedGames.game', 'title thumbnail')
       .populate('completedLessons.lesson', 'title thumbnail');
 
@@ -314,11 +344,11 @@ exports.getChildDashboard = async (req, res, next) => {
       .limit(5)
       .populate('game', 'title thumbnail category')
       .populate('learningModule', 'title thumbnail subject');
-      
+
     // Get today's screen time
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const todaySessions = await Session.find({
       child: child._id,
       startTime: { $gte: today }

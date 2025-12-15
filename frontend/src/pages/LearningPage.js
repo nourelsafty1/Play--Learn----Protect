@@ -13,7 +13,7 @@ import { getCategoryColor, truncate } from '../utils/helpers';
 const LearningPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -50,25 +50,29 @@ const LearningPage = () => {
     navigate(`/learning/${moduleId}`);
   };
 
-  const handleEditModule = (moduleId, e) => {
-    e.stopPropagation();
-    navigate(`/learning/${moduleId}/edit`);
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-100 via-blue-100 to-purple-100">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">📚 Learning Modules</h1>
-          <p className="text-gray-600 text-lg">
-            {user?.role === 'teacher' 
-              ? 'View and manage learning modules for your students'
-              : 'Structured courses to master new skills'
-            }
-          </p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">📚 Learning Modules</h1>
+            <p className="text-gray-600 text-lg">
+              {user?.role === 'teacher'
+                ? 'View and manage learning modules for your students'
+                : 'Structured courses to master new skills'
+              }
+            </p>
+          </div>
+          {user?.role === 'teacher' && (
+            <Button onClick={() => navigate('/learning/create')}>
+              ➕ Create New Module
+            </Button>
+          )}
         </div>
 
         {/* Filters */}
@@ -146,8 +150,8 @@ const LearningPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modules.map((module) => (
-              <Card 
-                key={module._id} 
+              <Card
+                key={module._id}
                 className="cursor-pointer hover:shadow-2xl transition-all"
                 onClick={() => handleViewModule(module._id)}
               >
@@ -204,7 +208,7 @@ const LearningPage = () => {
                   📝 {module.lessons?.length ?? 0} lessons
                 </div>
 
-                {/* Action Buttons - Different for Teachers */}
+                {/* Action Buttons */}
                 {user?.role === 'teacher' ? (
                   <div className="flex gap-2">
                     <Button
@@ -216,17 +220,21 @@ const LearningPage = () => {
                         handleViewModule(module._id);
                       }}
                     >
-                      <span>👁️</span>
-                      <span>View</span>
+                      <span>👁️</span> View
                     </Button>
-                    <Button
-                      size="sm"
-                      fullWidth
-                      onClick={(e) => handleEditModule(module._id, e)}
-                    >
-                      <span>✏️</span>
-                      <span>Edit</span>
-                    </Button>
+                    {(typeof module.createdBy === 'object' ? module.createdBy._id === user._id : module.createdBy === user._id) && (
+                      <Button
+                        size="sm"
+                        fullWidth
+                        variant="primary" // Different variant to distinguish
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/learning/edit/${module._id}`);
+                        }}
+                      >
+                        <span>✏️</span> Edit
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <Button

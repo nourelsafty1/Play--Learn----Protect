@@ -401,16 +401,7 @@ const LearningDetailPage = () => {
                 </Button>
               )}
 
-              {user?.role === 'teacher' && (
-                <Button
-                  fullWidth
-                  size="lg"
-                  onClick={() => navigate(`/learning/${moduleId}/edit`)}
-                >
-                  <span className="text-2xl">✏️</span>
-                  <span>Edit Module</span>
-                </Button>
-              )}
+
 
               {/* Certificate Info */}
               {module.certificate?.available && (
