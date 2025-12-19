@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعلم الحروف العربية - Arabic Alphabet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 25px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+            color: #333;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #764ba2;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .current-letter-section {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .letter-display {
+            font-size: 8em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin: 20px 0;
+            transition: transform 0.3s;
+        }
+        
+        .letter-display:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .letter-name {
+            font-size: 2em;
+            color: white;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .letter-word {
+            font-size: 1.5em;
+            color: rgba(255,255,255,0.9);
+            margin-top: 10px;
+        }
+        
+        .word-example {
+            font-size: 1.3em;
+            color: white;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+        
+        .letter-card {
+            aspect-ratio: 1;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            position: relative;
+        }
+        
+        .letter-card:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .letter-card.learned {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-color: #38ef7d;
+            color: white;
+        }
+        
+        .letter-card.current {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-color: #f5576c;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .celebration-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            animation: bounce 0.5s;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .celebration h2 {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .celebration-emoji {
+            font-size: 5em;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎓 تعلم الحروف العربية</h1>
+        <p class="subtitle">Arabic Alphabet Learning Game</p>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-value" id="score">0</span>
+                <span class="stat-label">النقاط / Points</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="learned">0</span>
+                <span class="stat-label">حروف مكتسبة / Learned</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="level">1</span>
+                <span class="stat-label">المستوى / Level</span>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress" style="width: 0%">0%</div>
+        </div>
+        
+        <div class="current-letter-section" id="currentLetterSection">
+            <div class="letter-display" id="currentLetter">أ</div>
+            <div class="letter-name" id="letterName">ألف</div>
+            <div class="letter-word" id="letterWord">أرنب (Rabbit)</div>
+            <div class="word-example" id="wordExample">🐰 أرنب يجري في الحديقة</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="prevBtn" onclick="previousLetter()">← السابق</button>
+            <button class="btn btn-success" id="nextBtn" onclick="nextLetter()">التالي →</button>
+            <button class="btn btn-primary" id="completeBtn" onclick="completeGame()" style="display: none;">إنهاء اللعبة</button>
+        </div>
+        
+        <h2 style="text-align: center; color: #667eea; margin: 20px 0;">جميع الحروف / All Letters</h2>
+        <div class="alphabet-grid" id="alphabetGrid"></div>
+    </div>
+    
+    <div class="celebration" id="celebration">
+        <div class="celebration-content">
+            <div class="celebration-emoji">🎉</div>
+            <h2>ممتاز! Excellent!</h2>
+            <p style="font-size: 1.5em; color: #667eea; margin: 20px 0;">لقد تعلمت جميع الحروف!</p>
+            <p style="color: #666;">You learned all the letters!</p>
+            <button class="btn btn-primary" onclick="closeCelebration()" style="margin-top: 20px;">إغلاق / Close</button>
+        </div>
+    </div>
+    
+    <script>
+        // Arabic alphabet data
+        const arabicAlphabet = [
+            { letter: 'أ', name: 'ألف', word: 'أرنب', example: '🐰 أرنب يجري في الحديقة', english: 'Rabbit' },
+            { letter: 'ب', name: 'باء', word: 'بطة', example: '🦆 بطة تسبح في الماء', english: 'Duck' },
+            { letter: 'ت', name: 'تاء', word: 'تفاحة', example: '🍎 تفاحة حمراء لذيذة', english: 'Apple' },
+            { letter: 'ث', name: 'ثاء', word: 'ثعلب', example: '🦊 ثعلب ذكي وسريع', english: 'Fox' },
+            { letter: 'ج', name: 'جيم', word: 'جمل', example: '🐫 جمل في الصحراء', english: 'Camel' },
+            { letter: 'ح', name: 'حاء', word: 'حصان', example: '🐴 حصان قوي وسريع', english: 'Horse' },
+            { letter: 'خ', name: 'خاء', word: 'خروف', example: '🐑 خروف أبيض ناعم', english: 'Sheep' },
+            { letter: 'د', name: 'دال', word: 'دجاجة', example: '🐔 دجاجة تضع البيض', english: 'Chicken' },
+            { letter: 'ذ', name: 'ذال', word: 'ذئب', example: '🐺 ذئب في الغابة', english: 'Wolf' },
+            { letter: 'ر', name: 'راء', word: 'رجل', example: '👨 رجل طيب ومساعد', english: 'Man' },
+            { letter: 'ز', name: 'زاي', word: 'زرافة', example: '🦒 زرافة طويلة جداً', english: 'Giraffe' },
+            { letter: 'س', name: 'سين', word: 'سمكة', example: '🐟 سمكة في البحر', english: 'Fish' },
+            { letter: 'ش', name: 'شين', word: 'شمس', example: '☀️ شمس مشرقة في السماء', english: 'Sun' },
+            { letter: 'ص', name: 'صاد', word: 'صقر', example: '🦅 صقر يطير عالياً', english: 'Eagle' },
+            { letter: 'ض', name: 'ضاد', word: 'ضفدع', example: '🐸 ضفدع في البركة', english: 'Frog' },
+            { letter: 'ط', name: 'طاء', word: 'طائر', example: '🐦 طائر يغني على الشجرة', english: 'Bird' },
+            { letter: 'ظ', name: 'ظاء', word: 'ظبي', example: '🦌 ظبي سريع في الغابة', english: 'Deer' },
+            { letter: 'ع', name: 'عين', word: 'عصفور', example: '🐤 عصفور صغير جميل', english: 'Sparrow' },
+            { letter: 'غ', name: 'غين', word: 'غزال', example: '🦌 غزال رشيق وجميل', english: 'Gazelle' },
+            { letter: 'ف', name: 'فاء', word: 'فيل', example: '🐘 فيل كبير وذكي', english: 'Elephant' },
+            { letter: 'ق', name: 'قاف', word: 'قرد', example: '🐵 قرد يلعب في الشجرة', english: 'Monkey' },
+            { letter: 'ك', name: 'كاف', word: 'كلب', example: '🐶 كلب وفدي ومخلص', english: 'Dog' },
+            { letter: 'ل', name: 'لام', word: 'لبؤة', example: '🦁 لبؤة ملكة الغابة', english: 'Lioness' },
+            { letter: 'م', name: 'ميم', word: 'موزة', example: '🍌 موزة صفراء لذيذة', english: 'Banana' },
+            { letter: 'ن', name: 'نون', word: 'نمر', example: '🐅 نمر قوي وسريع', english: 'Tiger' },
+            { letter: 'ه', name: 'هاء', word: 'هدهد', example: '🦜 هدهد ملون وجميل', english: 'Hoopoe' },
+            { letter: 'و', name: 'واو', word: 'وردة', example: '🌹 وردة حمراء جميلة', english: 'Rose' },
+            { letter: 'ي', name: 'ياء', word: 'يمامة', example: '🕊️ يمامة بيضاء ناعمة', english: 'Dove' }
+        ];
+        
+        let currentIndex = 0;
+        let score = 0;
+        let learnedLetters = new Set();
+        let level = 1;
+        let startTime = Date.now();
+        
+        // Initialize game
+        function initGame() {
+            createAlphabetGrid();
+            updateDisplay();
+            updateProgress();
+        }
+        
+        // Create alphabet grid
+        function createAlphabetGrid() {
+            const grid = document.getElementById('alphabetGrid');
+            grid.innerHTML = '';
+            
+            arabicAlphabet.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'letter-card';
+                if (index === currentIndex) {
+                    card.classList.add('current');
+                }
+                if (learnedLetters.has(index)) {
+                    card.classList.add('learned');
+                }
+                card.textContent = item.letter;
+                card.onclick = () => selectLetter(index);
+                grid.appendChild(card);
+            });
+        }
+        
+        // Select a letter
+        function selectLetter(index) {
+            currentIndex = index;
+            learnedLetters.add(index);
+            score += 10;
+            updateDisplay();
+            createAlphabetGrid();
+            updateProgress();
+            
+            // Check if all letters learned
+            if (learnedLetters.size === arabicAlphabet.length) {
+                showCelebration();
+            }
+        }
+        
+        // Update display
+        function updateDisplay() {
+            const current = arabicAlphabet[currentIndex];
+            document.getElementById('currentLetter').textContent = current.letter;
+            document.getElementById('letterName').textContent = current.name;
+            document.getElementById('letterWord').textContent = `${current.word} (${current.english})`;
+            document.getElementById('wordExample').textContent = current.example;
+            document.getElementById('score').textContent = score;
+            document.getElementById('learned').textContent = learnedLetters.size;
+            document.getElementById('level').textContent = level;
+            
+            // Update buttons
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === arabicAlphabet.length - 1;
+            
+            // Show complete button if all learned
+            if (learnedLetters.size === arabicAlphabet.length) {
+                document.getElementById('completeBtn').style.display = 'block';
+            }
+        }
+        
+        // Update progress
+        function updateProgress() {
+            const progress = (learnedLetters.size / arabicAlphabet.length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            document.getElementById('progress').textContent = Math.round(progress) + '%';
+            
+            // Update level based on progress
+            if (progress >= 100) {
+                level = 3;
+            } else if (progress >= 50) {
+                level = 2;
+            } else {
+                level = 1;
+            }
+            document.getElementById('level').textContent = level;
+        }
+        
+        // Navigate letters
+        function nextLetter() {
+            if (currentIndex < arabicAlphabet.length - 1) {
+                currentIndex++;
+                updateDisplay();
+                createAlphabetGrid();
+            }
+        }
+        
+        function previousLetter() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateDisplay();
+                createAlphabetGrid();
+            }
+        }
+        
+        // Show celebration
+        function showCelebration() {
+            document.getElementById('celebration').style.display = 'flex';
+        }
+        
+        function closeCelebration() {
+            document.getElementById('celebration').style.display = 'none';
+        }
+        
+        // Complete game
+        function completeGame() {
+            const endTime = Date.now();
+            const duration = Math.floor((endTime - startTime) / 1000); // in seconds
+            const completionPercentage = Math.round((learnedLetters.size / arabicAlphabet.length) * 100);
+            
+            // Calculate final score
+            const finalScore = score + (completionPercentage * 2) + (level * 10);
+            
+            // Send game completion data to parent window
+            if (window.parent && window.parent !== window) {
+                window.parent.postMessage({
+                    type: 'GAME_COMPLETE',
+                    data: {
+                        score: finalScore,
+                        level: level,
+                        completed: true,
+                        duration: duration,
+                        completionPercentage: completionPercentage,
+                        pointsEarned: Math.floor(finalScore / 10)
+                    }
+                }, '*');
+            }
+            
+            // Show completion message
+            alert(`🎉 ممتاز! لقد أكملت اللعبة!\n\nExcellent! You completed the game!\n\nScore: ${finalScore}\nLevel: ${level}\nLetters Learned: ${learnedLetters.size}/29`);
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                nextLetter();
+            } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                previousLetter();
+            } else if (e.key === 'Enter') {
+                selectLetter(currentIndex);
+            }
+        });
+        
+        // Initialize on load
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
+

@@ -137,7 +137,7 @@ const alertSchema = new mongoose.Schema({
   
   parentResponse: {
     type: String,
-    enum: ['dismissed', 'acknowledged', 'action-taken', 'false-positive'],
+    enum: ['dismissed', 'acknowledged', 'action-taken', 'false-positive', null],
     default: null
   },
   

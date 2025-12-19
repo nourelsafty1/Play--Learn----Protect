@@ -1,7 +1,7 @@
 // src/pages/MonitoringPage.js
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../components/common/Navbar';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -11,16 +11,25 @@ import { formatDuration } from '../utils/helpers';
 
 const MonitoringPage = () => {
   const navigate = useNavigate();
+  const { childId: urlChildId } = useParams(); // Get childId from URL if present
   
   const [children, setChildren] = useState([]);
   const [selectedChild, setSelectedChild] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('7');
 
   useEffect(() => {
     fetchChildren();
+    fetchDashboard();
   }, []);
+
+  useEffect(() => {
+    if (urlChildId) {
+      setSelectedChild(urlChildId);
+    }
+  }, [urlChildId]);
 
   useEffect(() => {
     if (selectedChild) {
@@ -36,12 +45,26 @@ const MonitoringPage = () => {
       setChildren(childrenData);
       
       if (childrenData.length > 0) {
-        setSelectedChild(childrenData[0]._id);
+        // Use URL childId if present, otherwise use first child
+        if (urlChildId && childrenData.find(c => c._id === urlChildId)) {
+          setSelectedChild(urlChildId);
+        } else {
+          setSelectedChild(childrenData[0]._id);
+        }
       }
     } catch (error) {
       console.error('Error fetching children:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDashboard = async () => {
+    try {
+      const response = await monitoringAPI.getDashboard();
+      setDashboardData(response.data.data);
+    } catch (error) {
+      console.error('Error fetching dashboard:', error);
     }
   };
 
@@ -272,6 +295,50 @@ const MonitoringPage = () => {
                 </div>
               )}
             </Card>
+
+            {/* Recent Activities */}
+            {dashboardData?.recentActivities && dashboardData.recentActivities.length > 0 && (
+              <Card title="📋 Recent Activities">
+                <div className="space-y-3">
+                  {dashboardData.recentActivities
+                    .filter(activity => !selectedChild || activity.childId === selectedChild || activity.childId?._id === selectedChild)
+                    .slice(0, 10)
+                    .map((activity, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">
+                            {activity.activityType === 'game' ? '🎮' : 
+                             activity.activityType === 'learning-module' ? '📚' : 
+                             activity.activityType === 'creative' ? '🎨' : '📱'}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              {activity.activityType === 'game' && activity.game?.title ? activity.game.title :
+                               activity.activityType === 'learning-module' && activity.learningModule?.title ? activity.learningModule.title :
+                               activity.activityType}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {activity.startTime ? new Date(activity.startTime).toLocaleString() : 
+                               activity.sessionStartTime ? new Date(activity.sessionStartTime).toLocaleString() : 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {activity.score !== undefined && (
+                            <div className="font-semibold text-blue-600">Score: {activity.score}</div>
+                          )}
+                          {activity.duration && (
+                            <div className="text-sm text-gray-500">{Math.round(activity.duration / 60)}m</div>
+                          )}
+                          {activity.completed && (
+                            <div className="text-xs text-green-600">✓ Completed</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </Card>
+            )}
           </>
         ) : (
           <Card>

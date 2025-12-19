@@ -51,14 +51,47 @@ exports.startSession = async (req, res, next) => {
       startTime: { $gte: today }
     });
 
-    const totalTimeToday = todaySessions.reduce((sum, s) => sum + s.duration, 0) / 60;
+    // Calculate total time including active sessions
+    const totalTimeToday = todaySessions.reduce((sum, s) => {
+      let duration = s.duration;
+      // If session is active, calculate current duration
+      if (s.isActive && s.startTime) {
+        duration = Math.floor((Date.now() - s.startTime.getTime()) / 1000);
+      }
+      return sum + duration;
+    }, 0) / 60; // Convert to minutes
+
+    const remainingTime = child.dailyScreenTimeLimit - totalTimeToday;
 
     if (totalTimeToday >= child.dailyScreenTimeLimit) {
+      // Create alert for screen time limit
+      await Alert.create({
+        child: child._id,
+        type: 'screen-time-limit',
+        severity: 'medium',
+        title: 'Screen Time Limit Reached',
+        titleArabic: 'تم الوصول إلى حد وقت الشاشة',
+        message: `You've reached your daily limit of ${child.dailyScreenTimeLimit} minutes.`,
+        messageArabic: `لقد وصلت إلى حدك اليومي وهو ${child.dailyScreenTimeLimit} دقيقة.`,
+        educationalTip: 'Take a break! Go outside, read a book, or play with friends.',
+        educationalTipArabic: 'خذ استراحة! اذهب للخارج، اقرأ كتاباً، أو العب مع الأصدقاء.',
+        triggeredBy: 'screen-time-monitor',
+        context: {
+          timeToday: Math.round(totalTimeToday),
+          limit: child.dailyScreenTimeLimit
+        },
+        shownToChild: true,
+        shownToParent: true
+      });
+
       return res.status(403).json({
         success: false,
         message: 'Daily screen time limit reached',
+        messageArabic: 'تم الوصول إلى حد وقت الشاشة لهذا اليوم',
         timeUsed: Math.round(totalTimeToday),
-        limit: child.dailyScreenTimeLimit
+        limit: child.dailyScreenTimeLimit,
+        remaining: 0,
+        limitReached: true
       });
     }
 
@@ -191,10 +224,12 @@ exports.getScreenTimeAnalytics = async (req, res, next) => {
       });
     }
 
-    // Calculate date range
+    // Calculate date range - include full current day
     const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999); // End of today
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(period));
+    startDate.setHours(0, 0, 0, 0); // Start of that day
 
     const screenTimeData = await analytics.getScreenTimeAnalytics(
       childId,
@@ -228,9 +263,12 @@ exports.getLearningAnalytics = async (req, res, next) => {
       });
     }
 
+    // Calculate date range - include full current day
     const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999); // End of today
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(period));
+    startDate.setHours(0, 0, 0, 0); // Start of that day
 
     const learningData = await analytics.getLearningAnalytics(
       childId,
@@ -264,9 +302,12 @@ exports.getSafetyAnalytics = async (req, res, next) => {
       });
     }
 
+    // Calculate date range - include full current day
     const endDate = new Date();
+    endDate.setHours(23, 59, 59, 999); // End of today
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(period));
+    startDate.setHours(0, 0, 0, 0); // Start of that day
 
     const safetyData = await analytics.getSafetyAnalytics(
       childId,
@@ -383,10 +424,32 @@ exports.getMonitoringDashboard = async (req, res, next) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get today's sessions
+    // Get today's sessions with activities populated
     const todaySessions = await Session.find({
       child: { $in: childIds },
       startTime: { $gte: today }
+    }).populate('activities.game', 'title category').populate('activities.learningModule', 'title subject');
+
+    // Get all activities from today's sessions
+    const allActivities = [];
+    todaySessions.forEach(session => {
+      if (session.activities && session.activities.length > 0) {
+        session.activities.forEach(activity => {
+          allActivities.push({
+            ...activity.toObject(),
+            sessionId: session._id,
+            childId: session.child,
+            sessionStartTime: session.startTime
+          });
+        });
+      }
+    });
+
+    // Sort activities by start time (most recent first)
+    allActivities.sort((a, b) => {
+      const timeA = a.startTime ? new Date(a.startTime).getTime() : new Date(a.sessionStartTime).getTime();
+      const timeB = b.startTime ? new Date(b.startTime).getTime() : new Date(b.sessionStartTime).getTime();
+      return timeB - timeA;
     });
 
     // Get unresolved alerts
@@ -445,7 +508,8 @@ exports.getMonitoringDashboard = async (req, res, next) => {
           currentStreak: child.currentStreak
         })),
         recentAlerts: unresolvedAlerts,
-        recentAchievements: recentAchievements.slice(0, 10)
+        recentAchievements: recentAchievements.slice(0, 10),
+        recentActivities: allActivities.slice(0, 20) // Show last 20 activities
       }
     });
 

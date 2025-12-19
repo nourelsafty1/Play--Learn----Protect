@@ -231,6 +231,38 @@ const sampleGames = [
     isFeatured: true,
     contentRating: '9+',
     safetyChecked: true
+  },
+  {
+    title: 'Arabic Alphabet Adventure',
+    titleArabic: 'مغامرة الحروف العربية',
+    description: 'Learn the Arabic alphabet through fun, interactive games! Perfect for beginners.',
+    descriptionArabic: 'تعلم الحروف العربية من خلال ألعاب تفاعلية ممتعة! مثالي للمبتدئين.',
+    category: 'Arabic',
+    type: 'serious',
+    ageGroups: ['3-5', '6-8', '9-12'],
+    difficulty: 'beginner',
+    thumbnail: 'https://via.placeholder.com/300x200?text=Arabic+Alphabet',
+    gameUrl: '/games/arabic-alphabet-game.html',
+    gameType: 'self-hosted',
+    learningObjectives: [
+      'Learn all 29 Arabic letters',
+      'Recognize letter names and sounds',
+      'Associate letters with words',
+      'Build Arabic vocabulary',
+      'Practice letter pronunciation'
+    ],
+    skills: ['arabic-language', 'alphabet-recognition', 'vocabulary', 'pronunciation', 'reading'],
+    pointsPerCompletion: 100,
+    bonusPoints: 50,
+    duration: 15,
+    hasLevels: true,
+    numberOfLevels: 3,
+    language: ['ar', 'en'],
+    isActive: true,
+    isPublished: true,
+    isFeatured: true,
+    contentRating: 'everyone',
+    safetyChecked: true
   }
 ];
 

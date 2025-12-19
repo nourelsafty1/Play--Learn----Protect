@@ -11,7 +11,10 @@ exports.getScreenTimeAnalytics = async (childId, startDate, endDate) => {
     const sessions = await Session.find({
       child: childId,
       startTime: { $gte: startDate, $lte: endDate }
-    }).sort({ startTime: 1 });
+    })
+    .sort({ startTime: 1 })
+    .populate('activities.game', 'title category')
+    .populate('activities.learningModule', 'title subject');
     
     if (sessions.length === 0) {
       return {
@@ -24,8 +27,15 @@ exports.getScreenTimeAnalytics = async (childId, startDate, endDate) => {
       };
     }
     
-    // Calculate total time (in minutes)
-    const totalTime = sessions.reduce((sum, s) => sum + s.duration, 0) / 60;
+    // Calculate total time (in minutes) - include active sessions with current duration
+    const totalTime = sessions.reduce((sum, s) => {
+      let duration = s.duration;
+      // If session is active, calculate current duration
+      if (s.isActive && s.startTime) {
+        duration = Math.floor((Date.now() - s.startTime.getTime()) / 1000);
+      }
+      return sum + duration;
+    }, 0) / 60;
     
     // Average session time
     const averageSessionTime = totalTime / sessions.length;
@@ -40,7 +50,12 @@ exports.getScreenTimeAnalytics = async (childId, startDate, endDate) => {
         dayMap.set(day, { date: day, minutes: 0, sessions: 0 });
       }
       const dayData = dayMap.get(day);
-      dayData.minutes += session.duration / 60;
+      // Calculate duration - include active sessions with current duration
+      let sessionDuration = session.duration;
+      if (session.isActive && session.startTime) {
+        sessionDuration = Math.floor((Date.now() - session.startTime.getTime()) / 1000);
+      }
+      dayData.minutes += sessionDuration / 60;
       dayData.sessions += 1;
     });
     
@@ -55,25 +70,32 @@ exports.getScreenTimeAnalytics = async (childId, startDate, endDate) => {
     };
     
     sessions.forEach(session => {
-      session.activities.forEach(activity => {
-        const minutes = activity.duration / 60;
-        if (activity.activityType === 'game') {
-          activityBreakdown.games += minutes;
-        } else if (activity.activityType === 'learning-module') {
-          activityBreakdown.learning += minutes;
-        } else if (activity.activityType === 'creative') {
-          activityBreakdown.creative += minutes;
-        } else {
-          activityBreakdown.other += minutes;
-        }
-      });
+      if (session.activities && session.activities.length > 0) {
+        session.activities.forEach(activity => {
+          const minutes = (activity.duration || 0) / 60;
+          if (activity.activityType === 'game') {
+            activityBreakdown.games += minutes;
+          } else if (activity.activityType === 'learning-module') {
+            activityBreakdown.learning += minutes;
+          } else if (activity.activityType === 'creative') {
+            activityBreakdown.creative += minutes;
+          } else {
+            activityBreakdown.other += minutes;
+          }
+        });
+      }
     });
     
     // Peak usage hours (which hours of day are most active)
     const hourMap = new Array(24).fill(0);
     sessions.forEach(session => {
       const hour = session.startTime.getHours();
-      hourMap[hour] += session.duration / 60;
+      // Calculate duration - include active sessions with current duration
+      let sessionDuration = session.duration;
+      if (session.isActive && session.startTime) {
+        sessionDuration = Math.floor((Date.now() - session.startTime.getTime()) / 1000);
+      }
+      hourMap[hour] += sessionDuration / 60;
     });
     
     const peakUsageHours = hourMap
