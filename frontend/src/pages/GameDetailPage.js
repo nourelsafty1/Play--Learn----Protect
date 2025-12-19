@@ -70,7 +70,18 @@ const GameDetailPage = () => {
       }
     } catch (error) {
       console.error('Error starting game:', error);
-      alert('Failed to start game. Please try again.');
+      
+      // Check if it's a screen time limit error
+      if (error.response?.status === 403 && (error.response?.data?.limitReached || error.response?.data?.message?.includes('screen time'))) {
+        const { timeUsed, limit, remaining } = error.response.data;
+        const remainingTime = remaining !== undefined ? remaining : (limit - timeUsed);
+        const message = remainingTime > 0 
+          ? `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nYou have ${remainingTime} minutes remaining.\n\nPlease take a break and try again later.`
+          : `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nPlease take a break and try again tomorrow.`;
+        alert(message);
+      } else {
+        alert('Failed to start game. Please try again.');
+      }
     }
   };
 

@@ -201,6 +201,70 @@ exports.enrollModule = async (req, res, next) => {
       });
     }
 
+    // Check screen time limit BEFORE enrolling
+    const Session = require('../models/Session');
+    const child = await Child.findById(childId);
+    
+    if (!child) {
+      return res.status(404).json({
+        success: false,
+        message: 'Child not found'
+      });
+    }
+
+    // Get today's total screen time
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todaySessions = await Session.find({
+      child: childId,
+      startTime: { $gte: today }
+    });
+
+    // Calculate total time (include active sessions)
+    const totalTimeToday = todaySessions.reduce((sum, s) => {
+      let duration = s.duration;
+      if (s.isActive && s.startTime) {
+        duration = Math.floor((Date.now() - s.startTime.getTime()) / 1000);
+      }
+      return sum + duration;
+    }, 0) / 60; // Convert to minutes
+
+    const remainingTime = Math.max(0, child.dailyScreenTimeLimit - totalTimeToday);
+
+    if (totalTimeToday >= child.dailyScreenTimeLimit) {
+      // Create alert for screen time limit
+      const Alert = require('../models/Alert');
+      await Alert.create({
+        child: child._id,
+        type: 'screen-time-limit',
+        severity: 'medium',
+        title: 'Screen Time Limit Reached',
+        titleArabic: 'تم الوصول إلى حد وقت الشاشة',
+        message: `You've reached your daily limit of ${child.dailyScreenTimeLimit} minutes.`,
+        messageArabic: `لقد وصلت إلى حدك اليومي وهو ${child.dailyScreenTimeLimit} دقيقة.`,
+        educationalTip: 'Take a break! Go outside, read a book, or play with friends.',
+        educationalTipArabic: 'خذ استراحة! اذهب للخارج، اقرأ كتاباً، أو العب مع الأصدقاء.',
+        triggeredBy: 'screen-time-monitor',
+        context: {
+          timeToday: Math.round(totalTimeToday),
+          limit: child.dailyScreenTimeLimit
+        },
+        shownToChild: true,
+        shownToParent: true
+      });
+
+      return res.status(403).json({
+        success: false,
+        message: 'Screen time limit reached for today',
+        messageArabic: 'تم الوصول إلى حد وقت الشاشة لهذا اليوم',
+        timeUsed: Math.round(totalTimeToday),
+        limit: child.dailyScreenTimeLimit,
+        remaining: 0,
+        limitReached: true
+      });
+    }
+
     const module = await LearningModule.findById(req.params.id);
 
     if (!module) {
@@ -234,8 +298,7 @@ exports.enrollModule = async (req, res, next) => {
     // Increment enrollment count
     await module.incrementEnrollment();
 
-    // Update child's streak
-    const child = await Child.findById(childId);
+    // Update child's streak (child already fetched above)
     if (child) {
       child.updateStreak();
       await child.save();

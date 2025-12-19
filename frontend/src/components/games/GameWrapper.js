@@ -37,7 +37,22 @@ const GameWrapper = ({ game, childId, sessionId, onComplete, onClose }) => {
         }
       } catch (err) {
         console.error('Error starting monitoring session:', err);
-        // Don't block game from starting if monitoring fails
+        
+        // Check if it's a screen time limit error
+        if (err.response?.status === 403 && (err.response?.data?.limitReached || err.response?.data?.message?.includes('screen time'))) {
+          const { timeUsed, limit, remaining } = err.response.data;
+          const remainingTime = remaining !== undefined ? remaining : (limit - timeUsed);
+          const message = remainingTime > 0 
+            ? `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nYou have ${remainingTime} minutes remaining.\n\nPlease take a break and try again later.`
+            : `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nPlease take a break and try again tomorrow.`;
+          alert(message);
+          // Close the game wrapper
+          if (onClose) {
+            onClose();
+          }
+          return;
+        }
+        // Don't block game from starting if monitoring fails for other reasons
       }
     };
 
@@ -59,6 +74,7 @@ const GameWrapper = ({ game, childId, sessionId, onComplete, onClose }) => {
       };
       endSession();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId, game._id, game.title]);
 
   useEffect(() => {

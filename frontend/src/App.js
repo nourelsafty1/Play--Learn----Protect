@@ -15,6 +15,7 @@ import LearningPage from './pages/LearningPage';
 import CreateLearningModulePage from './pages/CreateLearningModulePage';
 import LearningDetailPage from './pages/LearningDetailPage';
 import MonitoringPage from './pages/MonitoringPage';
+import DetailedMonitoringPage from './pages/DetailedMonitoringPage';
 import SafetyPage from './pages/SafetyPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import ProfilePage from './pages/ProfilePage';
@@ -169,6 +170,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MonitoringPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/monitoring/:childId"
+          element={
+            <ProtectedRoute>
+              <DetailedMonitoringPage />
             </ProtectedRoute>
           }
         />

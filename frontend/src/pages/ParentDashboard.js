@@ -8,7 +8,7 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Loading from '../components/common/Loading';
 import { childrenAPI, monitoringAPI } from '../services/api';
-import { getAvatarColor, getInitials, getGreeting } from '../utils/helpers';
+import { getAvatarColor, getInitials } from '../utils/helpers';
 import { useTranslation } from '../utils/translations';
 
 const ParentDashboard = () => {
@@ -179,6 +179,121 @@ const ParentDashboard = () => {
             </div>
           )}
         </Card>
+
+        {/* Screen Time Overview */}
+        {dashboardData && children.length > 0 && (
+          <Card title="⏰ Screen Time Overview" subtitle="Today's screen time by child" className="mb-8">
+            <div className="space-y-4">
+              {children.map((child) => {
+                // Get child's screen time from dashboard data if available
+                const childScreenTime = dashboardData.recentActivities
+                  ?.filter(a => (a.childId === child._id || a.childId?._id === child._id))
+                  .reduce((sum, a) => sum + (a.duration || 0), 0) / 60 || 0;
+                
+                return (
+                  <div key={child._id} className="p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full ${child.avatarColor || getAvatarColor(child.name)} flex items-center justify-center text-white font-bold`}>
+                          {child.avatar || getInitials(child.name)}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-800">{child.name}</div>
+                          <div className="text-sm text-gray-500">Screen time today</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-blue-600">{Math.round(childScreenTime)}m</div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/monitoring/${child._id}`)}
+                          className="mt-2"
+                        >
+                          View Details →
+                        </Button>
+                      </div>
+                    </div>
+                    {child.dailyScreenTimeLimit && (
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>Limit: {child.dailyScreenTimeLimit}m</span>
+                          <span>{Math.round((childScreenTime / child.dailyScreenTimeLimit) * 100)}% used</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${
+                              childScreenTime >= child.dailyScreenTimeLimit
+                                ? 'bg-red-500'
+                                : childScreenTime >= child.dailyScreenTimeLimit * 0.8
+                                ? 'bg-yellow-500'
+                                : 'bg-green-500'
+                            }`}
+                            style={{ width: `${Math.min(100, (childScreenTime / child.dailyScreenTimeLimit) * 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
+        {/* Recent Alerts */}
+        {dashboardData?.recentAlerts && dashboardData.recentAlerts.length > 0 && (
+          <Card title="🚨 Recent Alerts" subtitle="Alerts requiring your attention" className="mb-8">
+            <div className="space-y-3">
+              {dashboardData.recentAlerts.slice(0, 5).map((alert, index) => (
+                <div key={index} className={`p-4 rounded-lg ${
+                  alert.severity === 'critical' ? 'bg-red-50 border-l-4 border-red-500' :
+                  alert.severity === 'high' ? 'bg-orange-50 border-l-4 border-orange-500' :
+                  alert.severity === 'medium' ? 'bg-yellow-50 border-l-4 border-yellow-500' :
+                  'bg-blue-50 border-l-4 border-blue-500'
+                }`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xl">
+                          {alert.type === 'screen-time-limit' ? '⏰' :
+                           alert.type === 'screen-time-warning' ? '⚠️' :
+                           alert.type === 'inappropriate-content' ? '🚫' :
+                           alert.type === 'cyberbullying-detected' ? '🛡️' : '🚨'}
+                        </span>
+                        <h4 className="font-semibold text-gray-800">{alert.title}</h4>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-2">{alert.message}</p>
+                      {alert.educationalTip && (
+                        <p className="text-xs text-gray-500 italic">💡 {alert.educationalTip}</p>
+                      )}
+                      <p className="text-xs text-gray-400 mt-2">
+                        {new Date(alert.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/safety/${alert.child}`)}
+                    >
+                      View →
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {dashboardData.recentAlerts.length > 5 && (
+              <div className="mt-4 text-center">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/safety')}
+                >
+                  View All Alerts →
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Recent Achievements */}
         {dashboardData?.recentAchievements && dashboardData.recentAchievements.length > 0 && (
