@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../utils/translations';
 import Navbar from '../components/common/Navbar';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -15,6 +16,7 @@ const GameDetailPage = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [game, setGame] = useState(null);
   const [children, setChildren] = useState([]);
@@ -70,12 +72,12 @@ const GameDetailPage = () => {
       }
     } catch (error) {
       console.error('Error starting game:', error);
-      
+
       // Check if it's a screen time limit error
       if (error.response?.status === 403 && (error.response?.data?.limitReached || error.response?.data?.message?.includes('screen time'))) {
         const { timeUsed, limit, remaining } = error.response.data;
         const remainingTime = remaining !== undefined ? remaining : (limit - timeUsed);
-        const message = remainingTime > 0 
+        const message = remainingTime > 0
           ? `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nYou have ${remainingTime} minutes remaining.\n\nPlease take a break and try again later.`
           : `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nPlease take a break and try again tomorrow.`;
         alert(message);
@@ -112,7 +114,7 @@ const GameDetailPage = () => {
         <Navbar />
         <div className="min-h-screen flex items-center justify-center">
           <Card>
-            <p className="text-gray-600">Game not found</p>
+            <p className="text-gray-600">{t('gameNotFound')}</p>
           </Card>
         </div>
       </>
@@ -143,7 +145,7 @@ const GameDetailPage = () => {
           onClick={() => navigate('/games')}
           className="mb-6"
         >
-          ← Back to Games
+          ← {t('backToGames')}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -168,7 +170,7 @@ const GameDetailPage = () => {
                 </div>
 
                 <div className="absolute top-4 right-4 px-4 py-2 rounded-full bg-white bg-opacity-90 text-gray-800 font-semibold capitalize">
-                  {game.category}
+                  {t(game.category?.toLowerCase() || 'category')}
                 </div>
               </div>
 
@@ -181,23 +183,23 @@ const GameDetailPage = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-yellow-500">⭐</span>
                   <span className="font-semibold">{(game.averageRating ?? 0).toFixed(1)}</span>
-                  <span className="text-gray-500 text-sm">({game.totalRatings ?? 0} ratings)</span>
+                  <span className="text-gray-500 text-sm">({game.totalRatings ?? 0} {t('ratings')})</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>👥</span>
                   <span className="font-semibold">{game.playCount ?? 0}</span>
-                  <span className="text-gray-500 text-sm">plays</span>
+                  <span className="text-gray-500 text-sm">{t('plays')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>⏱️</span>
-                  <span className="font-semibold">{game.duration ?? 0} min</span>
+                  <span className="font-semibold">{game.duration ?? 0} {t('min')}</span>
                 </div>
               </div>
 
               {/* Description */}
               <div className="mb-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-2">
-                  {user?.language === 'ar' ? 'حول هذه اللعبة' : 'About This Game'}
+                  {t('aboutThisGame')}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
                   {(user?.language === 'ar' && game.descriptionArabic) ? game.descriptionArabic : game.description}
@@ -208,7 +210,7 @@ const GameDetailPage = () => {
               {((user?.language === 'ar' && game.learningObjectivesArabic?.length > 0) || (game.learningObjectives?.length > 0)) && (
                 <div className="mb-6">
                   <h3 className="text-lg font-bold text-gray-800 mb-2">
-                    {user?.language === 'ar' ? 'أهداف التعلم' : 'Learning Objectives'}
+                    {t('learningObjectives')}
                   </h3>
                   <ul className="list-disc list-inside space-y-1 text-gray-600">
                     {(user?.language === 'ar' && game.learningObjectivesArabic?.length > 0)
@@ -224,15 +226,22 @@ const GameDetailPage = () => {
               )}
 
               {/* Skills */}
-              {game.skills && game.skills.length > 0 && (
+              {((user?.language === 'ar' && game.skillsArabic?.length > 0) || (game.skills?.length > 0)) && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">Skills Developed</h3>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{t('skillsDeveloped')}</h3>
                   <div className="flex flex-wrap gap-2">
-                    {game.skills.map((skill, index) => (
-                      <span key={index} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                        {skill}
-                      </span>
-                    ))}
+                    {(user?.language === 'ar' && game.skillsArabic?.length > 0)
+                      ? game.skillsArabic.map((skill, index) => (
+                        <span key={index} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+                          {skill}
+                        </span>
+                      ))
+                      : game.skills?.map((skill, index) => (
+                        <span key={index} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
+                          {skill}
+                        </span>
+                      ))
+                    }
                   </div>
                 </div>
               )}
@@ -242,15 +251,15 @@ const GameDetailPage = () => {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <Card>
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Play Game</h3>
+              <h3 className="text-lg font-bold text-gray-800 mb-4">{t('playGame')}</h3>
 
               {/* Age Groups */}
               <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Recommended Ages</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">{t('recommendedAges')}</p>
                 <div className="flex flex-wrap gap-2">
                   {game.ageGroups?.map((age, index) => (
                     <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      {age} years
+                      {age} {t('years')}
                     </span>
                   ))}
                 </div>
@@ -258,9 +267,9 @@ const GameDetailPage = () => {
 
               {/* Difficulty */}
               <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Difficulty</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">{t('difficulty')}</p>
                 <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm capitalize">
-                  {game.difficulty}
+                  {t(game.difficulty?.toLowerCase() || 'difficulty')}
                 </span>
               </div>
 
@@ -268,7 +277,7 @@ const GameDetailPage = () => {
               {children.length > 0 && (
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Select Child
+                    {t('selectChild')}
                   </label>
                   <select
                     value={selectedChild}
@@ -292,14 +301,14 @@ const GameDetailPage = () => {
                 disabled={!selectedChild}
               >
                 <span className="text-2xl"></span>
-                <span>Play Now</span>
+                <span>{t('playNow')}</span>
               </Button>
 
               {/* Points Info */}
               <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <p className="text-sm font-semibold text-gray-700 mb-1">Earn Points!</p>
+                <p className="text-sm font-semibold text-gray-700 mb-1">{t('earnPoints')}</p>
                 <p className="text-sm text-gray-600">
-                  Complete this game to earn <span className="font-bold text-yellow-600">{game.pointsPerCompletion ?? 0}</span> points
+                  {t('completeGameToEarn')} <span className="font-bold text-yellow-600">{game.pointsPerCompletion ?? 0}</span> {t('points')}
                 </p>
               </div>
             </Card>

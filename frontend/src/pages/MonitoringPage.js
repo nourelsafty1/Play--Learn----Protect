@@ -14,7 +14,7 @@ const MonitoringPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { childId: urlChildId } = useParams(); // Get childId from URL if present
-  
+
   const [children, setChildren] = useState([]);
   const [selectedChild, setSelectedChild] = useState(null);
   const [analytics, setAnalytics] = useState(null);
@@ -109,8 +109,8 @@ const MonitoringPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">📊 {t('monitoringDashboard')}</h1>
-          <p className="text-gray-600 text-lg">{t('trackActivity')}</p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">📊 {t('Monitoring Dashboard')}</h1>
+          <p className="text-gray-600 text-lg">{t('Track Activity')}</p>
         </div>
 
         {/* Controls */}
@@ -137,16 +137,16 @@ const MonitoringPage = () => {
             {/* Period Selector */}
             <div className="flex-1 w-full md:w-auto">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                {t('timePeriod')}
+                {t('Time Period')}
               </label>
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500"
               >
-                <option value="7">{t('last7Days')}</option>
-                <option value="30">{t('last30Days')}</option>
-                <option value="90">{t('last3Months')}</option>
+                <option value="7">{t('last 7 days')}</option>
+                <option value="30">{t('last 30 days')}</option>
+                <option value="90">{t('last 3 months')}</option>
               </select>
             </div>
 
@@ -157,7 +157,7 @@ const MonitoringPage = () => {
                 disabled={!selectedChild}
                 className="w-full"
               >
-                {t('viewDetailedReport')} →
+                {t('View Detailed Report')} →
               </Button>
             </div>
           </div>
@@ -309,19 +309,19 @@ const MonitoringPage = () => {
                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-3">
                           <div className="text-2xl">
-                            {activity.activityType === 'game' ? '🎮' : 
-                             activity.activityType === 'learning-module' ? '📚' : 
-                             activity.activityType === 'creative' ? '🎨' : '📱'}
+                            {activity.activityType === 'game' ? '🎮' :
+                              activity.activityType === 'learning-module' ? '📚' :
+                                activity.activityType === 'creative' ? '🎨' : '📱'}
                           </div>
                           <div>
                             <div className="font-semibold text-gray-800">
                               {activity.activityType === 'game' && activity.game?.title ? activity.game.title :
-                               activity.activityType === 'learning-module' && activity.learningModule?.title ? activity.learningModule.title :
-                               activity.activityType}
+                                activity.activityType === 'learning-module' && activity.learningModule?.title ? activity.learningModule.title :
+                                  activity.activityType}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {activity.startTime ? new Date(activity.startTime).toLocaleString() : 
-                               activity.sessionStartTime ? new Date(activity.sessionStartTime).toLocaleString() : 'N/A'}
+                              {activity.startTime ? new Date(activity.startTime).toLocaleString() :
+                                activity.sessionStartTime ? new Date(activity.sessionStartTime).toLocaleString() : 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -346,8 +346,8 @@ const MonitoringPage = () => {
           <Card>
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('noDataAvailable')}</h3>
-              <p className="text-gray-500">{t('addChildToObserve')}</p>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('No Data Available')}</h3>
+              <p className="text-gray-500">{t('Add Child To Observe')}</p>
             </div>
           </Card>
         )}

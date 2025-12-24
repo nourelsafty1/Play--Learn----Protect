@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../utils/translations';
 import Navbar from '../components/common/Navbar';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -14,6 +15,7 @@ const LearningDetailPage = () => {
   const { moduleId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [module, setModule] = useState(null);
   const [children, setChildren] = useState([]);
@@ -86,12 +88,12 @@ const LearningDetailPage = () => {
       await fetchProgress();
     } catch (error) {
       console.error('Error enrolling:', error);
-      
+
       // Check if it's a screen time limit error
       if (error.response?.status === 403 && (error.response?.data?.limitReached || error.response?.data?.message?.includes('screen time'))) {
         const { timeUsed, limit, remaining } = error.response.data;
         const remainingTime = remaining !== undefined ? remaining : (limit - timeUsed);
-        const message = remainingTime > 0 
+        const message = remainingTime > 0
           ? `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nYou have ${remainingTime} minutes remaining.\n\nPlease take a break and try again later.`
           : `Screen time limit reached!\n\nYou've used ${timeUsed} out of ${limit} minutes today.\n\nPlease take a break and try again tomorrow.`;
         alert(message);
@@ -117,14 +119,14 @@ const LearningDetailPage = () => {
     window.open(lesson.content, '_blank', 'noopener,noreferrer');
   };
 
-  const handleMarkComplete = async (lessonNumber) => {
+  const handleMarkComplete = async (lessonNumber, index) => {
     if (!selectedChild) {
       alert('Please select a child');
       return;
     }
 
     try {
-      setCompletingLesson(lessonNumber);
+      setCompletingLesson(index);
       await progressAPI.completeLesson(moduleId, selectedChild, lessonNumber);
       await fetchProgress(); // Refetch to update UI
     } catch (error) {
@@ -137,7 +139,7 @@ const LearningDetailPage = () => {
 
   const isLessonCompleted = (lessonNumber) => {
     if (!progress || !progress.lessonsCompleted) return false;
-    return progress.lessonsCompleted.some(l => l.lessonNumber === lessonNumber);
+    return progress.lessonsCompleted.some(l => l.lessonNumber == lessonNumber);
   };
 
   const getCompletedLessonsCount = () => {
@@ -159,7 +161,7 @@ const LearningDetailPage = () => {
         <Navbar />
         <div className="min-h-screen flex items-center justify-center">
           <Card>
-            <p className="text-gray-600">Module not found</p>
+            <p className="text-gray-600">{t('moduleNotFound')}</p>
           </Card>
         </div>
       </>
@@ -181,7 +183,7 @@ const LearningDetailPage = () => {
           onClick={() => navigate('/learning')}
           className="mb-6"
         >
-          ← Back to Learning
+          ← {t('backToLearning')}
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -205,7 +207,7 @@ const LearningDetailPage = () => {
                 </div>
 
                 <div className="absolute top-4 right-4 px-4 py-2 rounded-full bg-white bg-opacity-90 text-gray-800 font-semibold capitalize">
-                  {module.subject}
+                  {t(module.subject?.toLowerCase() || 'subject')}
                 </div>
               </div>
 
@@ -218,7 +220,7 @@ const LearningDetailPage = () => {
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-gray-700">
-                      Progress: {completedCount} / {totalLessons} lessons
+                      {t('progress')}: {completedCount} / {totalLessons} {t('lessons')}
                     </span>
                     <span className="text-sm font-semibold text-purple-600">
                       {completionPercentage}%
@@ -238,19 +240,19 @@ const LearningDetailPage = () => {
                 <div className="flex items-center gap-2">
                   <span>👥</span>
                   <span className="font-semibold">{module.enrollmentCount ?? 0}</span>
-                  <span className="text-gray-500 text-sm">enrolled</span>
+                  <span className="text-gray-500 text-sm">{t('enrolled')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>📝</span>
                   <span className="font-semibold">{module.lessons?.length ?? 0}</span>
-                  <span className="text-gray-500 text-sm">lessons</span>
+                  <span className="text-gray-500 text-sm">{t('lessons')}</span>
                 </div>
               </div>
 
               {/* Description */}
               <div className="mb-6">
                 <h3 className="text-lg font-bold text-gray-800 mb-2">
-                  {user?.language === 'ar' ? 'حول هذه الدورة' : 'About This Course'}
+                  {t('aboutThisCourse')}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
                   {(user?.language === 'ar' && module.descriptionArabic) ? module.descriptionArabic : module.description}
@@ -261,7 +263,7 @@ const LearningDetailPage = () => {
               {((user?.language === 'ar' && module.learningObjectivesArabic?.length > 0) || (module.learningObjectives?.length > 0)) && (
                 <div className="mb-6">
                   <h3 className="text-lg font-bold text-gray-800 mb-2">
-                    {user?.language === 'ar' ? 'ماذا ستتعلم' : "What You'll Learn"}
+                    {t('whatYouWillLearn')}
                   </h3>
                   <ul className="list-disc list-inside space-y-1 text-gray-600">
                     {(user?.language === 'ar' && module.learningObjectivesArabic?.length > 0)
@@ -278,11 +280,11 @@ const LearningDetailPage = () => {
 
               {/* Lessons List */}
               <div className="mb-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Course Content</h3>
+                <h3 className="text-lg font-bold text-gray-800 mb-4">{t('courseContent')}</h3>
                 <div className="space-y-3">
                   {module.lessons?.map((lesson, index) => {
                     const isCompleted = isLessonCompleted(lesson.lessonNumber);
-                    const isCompleting = completingLesson === lesson.lessonNumber;
+                    const isCompleting = completingLesson === index;
 
                     return (
                       <div
@@ -298,14 +300,14 @@ const LearningDetailPage = () => {
                               ? 'bg-green-500 text-white'
                               : 'bg-purple-500 text-white'
                               }`}>
-                              {isCompleted ? '✓' : lesson.lessonNumber}
+                              {isCompleted ? '' : lesson.lessonNumber}
                             </div>
                             <div className="flex-1">
                               <h4 className="font-semibold text-gray-800">
                                 {(user?.language === 'ar' && lesson.titleArabic) ? lesson.titleArabic : lesson.title}
                               </h4>
                               <p className="text-sm text-gray-500">
-                                {lesson.contentType} • {lesson.duration} min
+                                {t(lesson.contentType?.toLowerCase() || 'text')} • {lesson.duration} {t('min')}
                               </p>
                             </div>
                           </div>
@@ -324,22 +326,22 @@ const LearningDetailPage = () => {
                               onClick={() => handleLessonClick(lesson)}
                               className="mr-2"
                             >
-                              {lesson.contentType === 'video' ? 'Watch' : 'Start'}
+                              {lesson.contentType === 'video' ? t('watch') : t('start')}
                             </Button>
 
                             {user?.role === 'parent' && !isCompleted && (
                               <Button
                                 size="sm"
-                                onClick={() => handleMarkComplete(lesson.lessonNumber)}
+                                onClick={() => handleMarkComplete(lesson.lessonNumber, index)}
                                 disabled={isCompleting}
                               >
-                                {isCompleting ? 'Marking...' : 'Complete'}
+                                {isCompleting ? t('marking') : t('complete')}
                               </Button>
                             )}
 
                             {user?.role === 'parent' && isCompleted && (
                               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                                Completed ✓
+                                {t('completed')} ✓
                               </span>
                             )}
                           </div>
@@ -353,7 +355,7 @@ const LearningDetailPage = () => {
               {/* Skills */}
               {module.skills && module.skills.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">Skills You'll Gain</h3>
+                  <h3 className="text-lg font-bold text-gray-800 mb-2">{t('skillsGained')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {module.skills.map((skill, index) => (
                       <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold">
@@ -370,16 +372,16 @@ const LearningDetailPage = () => {
           <div className="lg:col-span-1">
             <Card>
               <h3 className="text-lg font-bold text-gray-800 mb-4">
-                {user?.role === 'teacher' ? 'Module Info' : 'Enroll Now'}
+                {user?.role === 'teacher' ? 'Module Info' : t('enrollNow')}
               </h3>
 
               {/* Age Groups */}
               <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Recommended Ages</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">{t('recommendedAges')}</p>
                 <div className="flex flex-wrap gap-2">
                   {module.ageGroups?.map((age, index) => (
                     <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                      {age} years
+                      {age} {t('years')}
                     </span>
                   ))}
                 </div>
@@ -387,9 +389,9 @@ const LearningDetailPage = () => {
 
               {/* Difficulty */}
               <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-700 mb-2">Difficulty</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">{t('difficulty')}</p>
                 <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm capitalize">
-                  {module.difficulty}
+                  {t(module.difficulty?.toLowerCase() || 'difficulty')}
                 </span>
               </div>
 
@@ -397,7 +399,7 @@ const LearningDetailPage = () => {
               {user?.role === 'parent' && children.length > 0 && (
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Select Child
+                    {t('selectChild')}
                   </label>
                   <select
                     value={selectedChild}
@@ -424,7 +426,7 @@ const LearningDetailPage = () => {
                   className={progress ? "bg-green-600 hover:bg-green-700 cursor-default" : ""}
                 >
                   <span className="text-2xl">{progress ? '' : ''}</span>
-                  <span>{progress ? 'Enrolled' : 'Enroll'}</span>
+                  <span>{progress ? t('enrolled') : t('enroll')}</span>
                 </Button>
               )}
 
@@ -433,21 +435,21 @@ const LearningDetailPage = () => {
               {/* Certificate Info */}
               {module.certificate?.available && (
                 <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <p className="text-sm font-semibold text-gray-700 mb-1">🏆 Certificate Available!</p>
+                  <p className="text-sm font-semibold text-gray-700 mb-1">🏆 {t('certificateAvailable')}</p>
                   <p className="text-sm text-gray-600">
-                    Complete this course to earn a certificate
+                    {t('completeCourseToEarnCert')}
                   </p>
                 </div>
               )}
 
               {/* Points Info */}
               <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <p className="text-sm font-semibold text-gray-700 mb-1">Earn Points!</p>
+                <p className="text-sm font-semibold text-gray-700 mb-1">{t('earnPoints')}</p>
                 <p className="text-sm text-gray-600">
-                  Complete this course to earn <span className="font-bold text-purple-600">{module.completionPoints ?? 0}</span> points
+                  {t('completeCourseToEarn')} <span className="font-bold text-purple-600">{module.completionPoints ?? 0}</span> {t('points')}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  +{module.pointsPerLesson ?? 0} points per lesson
+                  +{module.pointsPerLesson ?? 0} {t('pointsPerLesson')}
                 </p>
               </div>
             </Card>

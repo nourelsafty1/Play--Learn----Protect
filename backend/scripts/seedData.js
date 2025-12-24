@@ -36,7 +36,14 @@ const sampleGames = [
       'Solve word problems',
       'Practice mental math'
     ],
+    learningObjectivesArabic: [
+      'إتقان الجمع الأساسي',
+      'تعلم الطرح',
+      'حل المسائل اللفظية',
+      'ممارسة الحساب الذهني'
+    ],
     skills: ['problem-solving', 'arithmetic', 'logic', 'mental-math'],
+    skillsArabic: ['حل المشكلات', 'الحساب', 'المنطق', 'الحساب الذهني'],
     pointsPerCompletion: 100,
     bonusPoints: 50,
     duration: 15,
@@ -67,7 +74,14 @@ const sampleGames = [
       'Build sentences',
       'Enhance vocabulary'
     ],
+    learningObjectivesArabic: [
+      'تعلم كلمات جديدة',
+      'تحسين الإملاء',
+      'بناء الجمل',
+      'تعزيز المفردات'
+    ],
     skills: ['vocabulary', 'spelling', 'reading', 'language'],
+    skillsArabic: ['المفردات', 'الإملاء', 'القراءة', 'اللغة'],
     pointsPerCompletion: 80,
     bonusPoints: 40,
     duration: 10,
@@ -97,7 +111,14 @@ const sampleGames = [
       'Create simple programs',
       'Develop logical thinking'
     ],
+    learningObjectivesArabic: [
+      'فهم أساسيات البرمجة',
+      'تعلم التسلسل والأوامر',
+      'إنشاء برامج بسيطة',
+      'تطوير التفكير المنطقي'
+    ],
     skills: ['coding', 'logic', 'problem-solving', 'sequences'],
+    skillsArabic: ['البرمجة', 'المنطق', 'حل المشكلات', 'التسلسل'],
     pointsPerCompletion: 150,
     bonusPoints: 75,
     duration: 20,
@@ -128,7 +149,14 @@ const sampleGames = [
       'Understand friction',
       'Explore physics concepts'
     ],
+    learningObjectivesArabic: [
+      'فهم القوى والحركة',
+      'تعلم عن الجاذبية',
+      'فهم الاحتكاك',
+      'استكشاف مفاهيم الفيزياء'
+    ],
     skills: ['scientific-thinking', 'physics', 'observation', 'analysis'],
+    skillsArabic: ['التفكير العلمي', 'الفيزياء', 'الملاحظة', 'التحليل'],
     pointsPerCompletion: 120,
     bonusPoints: 60,
     duration: 15,
@@ -158,7 +186,14 @@ const sampleGames = [
       'Recognize common elements',
       'Build chemistry knowledge'
     ],
+    learningObjectivesArabic: [
+      'تعلم العناصر الكيميائية',
+      'فهم رموز العناصر',
+      'التعرف على العناصر الشائعة',
+      'بناء المعرفة الكيميائية'
+    ],
     skills: ['chemistry', 'memory', 'recognition', 'science'],
+    skillsArabic: ['الكيمياء', 'الذاكرة', 'التعرف', 'العلوم'],
     pointsPerCompletion: 130,
     bonusPoints: 65,
     duration: 12,
@@ -188,7 +223,14 @@ const sampleGames = [
       'Develop artistic skills',
       'Apply knowledge creatively'
     ],
+    learningObjectivesArabic: [
+      'التعبير عن الإبداع',
+      'تعلم الألوان والأشكال',
+      'تطوير المهارات الفنية',
+      'تطبيق المعرفة بشكل إبداعي'
+    ],
     skills: ['creativity', 'art', 'self-expression', 'imagination'],
+    skillsArabic: ['الإبداع', 'الفن', 'التعبير عن الذات', 'الخيال'],
     pointsPerCompletion: 90,
     bonusPoints: 45,
     duration: 15,
@@ -219,7 +261,15 @@ const sampleGames = [
       'Solve complex programming challenges',
       'Learn algorithm optimization'
     ],
+    learningObjectivesArabic: [
+      'إتقان الحلقات المتداخلة',
+      'فهم المنطق الشرطي',
+      'تحسين الكود للكفاءة',
+      'حل تحديات البرمجة المعقدة',
+      'تعلم تحسين الخوارزميات'
+    ],
     skills: ['advanced-coding', 'algorithm-design', 'optimization', 'problem-solving', 'logical-thinking'],
+    skillsArabic: ['البرمجة المتقدمة', 'تصميم الخوارزميات', 'التحسين', 'حل المشكلات', 'التفكير المنطقي'],
     pointsPerCompletion: 300,
     bonusPoints: 150, // High bonus for optimal solutions
     duration: 25,
@@ -251,7 +301,15 @@ const sampleGames = [
       'Build Arabic vocabulary',
       'Practice letter pronunciation'
     ],
+    learningObjectivesArabic: [
+      'تعلم جميع الحروف العربية الـ 29',
+      'التعرف على أسماء الحروف وأصواتها',
+      'ربط الحروف بالكلمات',
+      'بناء المفردات العربية',
+      'ممارسة نطق الحروف'
+    ],
     skills: ['arabic-language', 'alphabet-recognition', 'vocabulary', 'pronunciation', 'reading'],
+    skillsArabic: ['اللغة العربية', 'التعرف على الأبجدية', 'المفردات', 'النطق', 'القراءة'],
     pointsPerCompletion: 100,
     bonusPoints: 50,
     duration: 15,

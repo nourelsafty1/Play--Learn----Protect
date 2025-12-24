@@ -174,7 +174,7 @@ const ParentDashboard = () => {
                 onClick={() => navigate('/children/add')}
               >
                 <div className="text-6xl mb-4">➕</div>
-                <h3 className="text-lg font-semibold text-gray-700">{t('addChild')}</h3>
+                <h3 className="text-lg font-semibold text-gray-700">{t('add child')}</h3>
               </div>
             </div>
           )}
@@ -189,7 +189,7 @@ const ParentDashboard = () => {
                 const childScreenTime = dashboardData.recentActivities
                   ?.filter(a => (a.childId === child._id || a.childId?._id === child._id))
                   .reduce((sum, a) => sum + (a.duration || 0), 0) / 60 || 0;
-                
+
                 return (
                   <div key={child._id} className="p-4 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
@@ -222,13 +222,12 @@ const ParentDashboard = () => {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full ${
-                              childScreenTime >= child.dailyScreenTimeLimit
-                                ? 'bg-red-500'
-                                : childScreenTime >= child.dailyScreenTimeLimit * 0.8
+                            className={`h-2 rounded-full ${childScreenTime >= child.dailyScreenTimeLimit
+                              ? 'bg-red-500'
+                              : childScreenTime >= child.dailyScreenTimeLimit * 0.8
                                 ? 'bg-yellow-500'
                                 : 'bg-green-500'
-                            }`}
+                              }`}
                             style={{ width: `${Math.min(100, (childScreenTime / child.dailyScreenTimeLimit) * 100)}%` }}
                           ></div>
                         </div>
@@ -246,20 +245,19 @@ const ParentDashboard = () => {
           <Card title="🚨 Recent Alerts" subtitle="Alerts requiring your attention" className="mb-8">
             <div className="space-y-3">
               {dashboardData.recentAlerts.slice(0, 5).map((alert, index) => (
-                <div key={index} className={`p-4 rounded-lg ${
-                  alert.severity === 'critical' ? 'bg-red-50 border-l-4 border-red-500' :
+                <div key={index} className={`p-4 rounded-lg ${alert.severity === 'critical' ? 'bg-red-50 border-l-4 border-red-500' :
                   alert.severity === 'high' ? 'bg-orange-50 border-l-4 border-orange-500' :
-                  alert.severity === 'medium' ? 'bg-yellow-50 border-l-4 border-yellow-500' :
-                  'bg-blue-50 border-l-4 border-blue-500'
-                }`}>
+                    alert.severity === 'medium' ? 'bg-yellow-50 border-l-4 border-yellow-500' :
+                      'bg-blue-50 border-l-4 border-blue-500'
+                  }`}>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xl">
                           {alert.type === 'screen-time-limit' ? '⏰' :
-                           alert.type === 'screen-time-warning' ? '⚠️' :
-                           alert.type === 'inappropriate-content' ? '🚫' :
-                           alert.type === 'cyberbullying-detected' ? '🛡️' : '🚨'}
+                            alert.type === 'screen-time-warning' ? '⚠️' :
+                              alert.type === 'inappropriate-content' ? '🚫' :
+                                alert.type === 'cyberbullying-detected' ? '🛡️' : '🚨'}
                         </span>
                         <h4 className="font-semibold text-gray-800">{alert.title}</h4>
                       </div>
